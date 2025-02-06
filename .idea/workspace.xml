@@ -18,7 +18,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bcaa1aeb-992d-4092-9aad-f4ac9ac319d9" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine.h" beforeDir="false" afterPath="$PROJECT_DIR$/engine.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/interface.h" beforeDir="false" afterPath="$PROJECT_DIR$/interface.h" afterDir="false" />
@@ -102,7 +101,7 @@
       <updated>1738796817167</updated>
       <workItem from="1738796818831" duration="7700000" />
       <workItem from="1738839955584" duration="19756000" />
-      <workItem from="1738874989897" duration="1607000" />
+      <workItem from="1738874989897" duration="7665000" />
     </task>
     <servers />
   </component>

@@ -8,7 +8,7 @@
 
 #define ROWS 10
 #define COLUMNS 10
-#define MINES 64
+#define MINES 10
 
 //
 // SIGNATURES

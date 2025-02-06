@@ -6,7 +6,7 @@
 
 int main(){
     init_grid();
-    setvbuf(stdout, NULL, _IONBF, 0);
+
 
     while(!has_lost && !has_won){
         game_loop(position);
@@ -26,7 +26,6 @@ int main(){
 
 // TODO
 // semplifica condizioni
-// selezionata che lampeggia??
 // const, short, e unsigned
 // count mine col filter
 // il flag prima dello scopri
