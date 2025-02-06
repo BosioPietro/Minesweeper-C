@@ -6,12 +6,21 @@
 
 int main(){
     init_grid();
+    setvbuf(stdout, NULL, _IONBF, 0);
 
-    while(!has_lost){
+    while(!has_lost && !has_won){
         game_loop(position);
     }
 
-    printf("Press any key to continue...");
+    // system("@cls||clear");
+    //
+    // if (has_lost) {
+    //     printf("You lost\n");
+    // }
+    // else printf("You win\n");
+    //
+    print_grid();
+    getchar();
     return 0;
 }
 

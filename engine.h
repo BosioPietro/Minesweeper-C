@@ -8,7 +8,7 @@
 
 #define ROWS 10
 #define COLUMNS 10
-#define MINES 10
+#define MINES 64
 
 //
 // SIGNATURES
@@ -20,6 +20,7 @@ void handle_input(key command, int coords[2]);
 void place_mines();
 void init_grid();
 void uncover_cells(const int coords[2]);
+void check_win();
 
 // helper
 int count_surrounding_mines(const int pos[2]);
@@ -34,10 +35,11 @@ void debug();
 //
 // GLOBAL VARS
 //
+int position[2] = {0, 0};
 cell_info game_grid[ROWS][COLUMNS];
 short int mines_placed = 0;
-int position[2] = {0, 0};
 short int has_lost = 0;
+short int has_won = 0;
 
 
 //
@@ -45,7 +47,6 @@ short int has_lost = 0;
 //
 inline void game_loop(){
     char command;
-    debug();
 
     print_grid();
 
@@ -57,6 +58,7 @@ inline void game_loop(){
 
     system("@cls||clear");
     handle_input(command, position);
+    check_win();
 }
 
 inline void init_grid(){
@@ -123,7 +125,9 @@ inline void handle_input(const key command, int coords[2]){
             // done as the first move
             // prevents the user from losing immediately
             if(mines_placed == 0){
+                debug();
                 place_mines();
+                debug();
             }
 
             // flagged cells can't be interacted with
@@ -173,6 +177,7 @@ inline void place_mines(){
         do{
             x = rand() % (ROWS + 1);
             y = rand() % (COLUMNS + 1);
+
         }while(game_grid[x][y].content == ENGINE_CHARS.MINE || ( x == position[0] && y == position[1] ));
 
         cell_info *const cell = &game_grid[x][y];
@@ -207,6 +212,22 @@ inline void uncover_cells(const int coords[2]){
 
         uncover_cells(coord);
     }
+}
+
+inline void check_win() {
+    int i = 0, j = 0;
+    cell_info cell = game_grid[0][0];
+
+    while(i < ROWS && (cell.content == ENGINE_CHARS.MINE || (cell.content == ENGINE_CHARS.EMPTY && cell.is_visible))) {
+        j = 0;
+        while(j < COLUMNS && (cell.content == ENGINE_CHARS.MINE || (cell.content == ENGINE_CHARS.EMPTY && cell.is_visible))) {
+            cell = game_grid[i][++j];
+        }
+        ++i;
+    }
+
+
+    has_won = i == ROWS && j == COLUMNS;
 }
 
 //
@@ -285,9 +306,10 @@ inline void add_cell_to_array(int*** cells, int* length, const int x, const int 
 }
 
 inline void debug() {
+    printf("{ %d %d}\n", position[0], position[1]);
     for(int i = 0; i < ROWS; ++i) {
         for(int j = 0; j < COLUMNS; ++j) {
-            printf("%d ", game_grid[i][j].is_visible);
+            printf("%d ", game_grid[i][j].content == ENGINE_CHARS.MINE);
         }
         printf("\n");
     }
