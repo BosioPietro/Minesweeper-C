@@ -5,7 +5,7 @@
 
 #define ROWS 10
 #define COLUMNS 10
-#define MINES 3
+#define MINES 10
 
 //
 // TYPES
@@ -91,20 +91,20 @@ int position[2] = {0, 0};
 //
 void print_grid();
 void game_loop();
-short int is_valid_input(const char input);
-void handle_input(const char command);
+short int is_valid_input(char input);
+void handle_input(char command);
 void place_mines();
 void init_grid();
 void uncover_cells(const int coords[2]);
-int count_surrouding_mines(const int pos[2]);
-void take_nearby_row(int** cells, int* cell_count, const int x, const int y);
-void take_nearby_empty_cells(int** cells, int* cell_count, const int pos[2]);
-void add_cell_to_array(int*** cells, int* length, int (*new_element)[2]);
+int count_surrounding_mines(const int pos[2]);
+void take_nearby_row(int*** cells, int* cell_count, int x, int y);
+void take_nearby_cells(int*** numbered_cells, int*** empty_cells, int* empty_cell_count, int* numbered_cell_count, const int pos[2]);
+void add_cell_to_array(int*** cells, int* length, const int x, const int y);
 
 //
 // FUNCTIONS
 //
-void game_loop(){
+inline void game_loop(){
     char command;
 
     print_grid();
@@ -119,7 +119,7 @@ void game_loop(){
     handle_input(command);
 }
 
-void place_mines(){
+inline void place_mines(){
     srand(time(NULL));
     mines_placed = 1;
 
@@ -134,17 +134,17 @@ void place_mines(){
     }
 }
 
-void init_grid(){
+inline void init_grid(){
     for(int x = 0; x < ROWS; ++x){
         for(int y = 0; y < COLUMNS; ++y){
-            game_grid[x][y].is_visible = 1;
+            game_grid[x][y].is_visible = 0;
             game_grid[x][y].content = ENGINE_CHARS.EMPTY;
         }
     }
 }
 
-short int is_valid_input(const char input){
-    char keys[] = {
+inline short int is_valid_input(const char input){
+    const char keys[] = {
         KEYSTROKES.KEY_UP,
         KEYSTROKES.KEY_DOWN,
         KEYSTROKES.KEY_LEFT,
@@ -162,7 +162,7 @@ short int is_valid_input(const char input){
     return 0;
 }
 
-void handle_input(const char command){
+inline void handle_input(const char command){
     if(command == KEYSTROKES.KEY_UP){
         if(position[0] > 0){
            position[0] -= 1;
@@ -199,8 +199,8 @@ void handle_input(const char command){
     }
 }
 
-void uncover_cells(const int coords[2]){
-    int mine_count = count_surrouding_mines(coords);
+inline void uncover_cells(const int coords[2]){
+    const int mine_count = count_surrounding_mines(coords);
     cell_info* current_cell = &game_grid[coords[0]][coords[1]];
 
     current_cell->is_visible = 1;
@@ -210,78 +210,90 @@ void uncover_cells(const int coords[2]){
         return;
     }
 
-    int** cells;
-    int cell_count = 0;
+    int** empty_cells = malloc(0);
+    int** numbered_cells = malloc(0);
+    int numbered_cell_count = 0;
+    int empty_cell_count = 0;
 
-    take_nearby_empty_cells(cells, &cell_count, coords);
+    take_nearby_cells(&numbered_cells, &empty_cells, &empty_cell_count, &numbered_cell_count, coords);
 
 
-    for(int i = 0; i < cell_count; ++i){
-        cell_info* cell = &game_grid[cells[i][0]][cells[i][1]];
+    for(int i = 0; i < empty_cell_count; ++i){
+        cell_info* cell = &game_grid[empty_cells[i][0]][empty_cells[i][1]];
         cell->is_visible = 1;
     }
 
-    return;
+    for(int i = 0; i < numbered_cell_count; ++i){
+        const int x = numbered_cells[i][0],
+                  y = numbered_cells[i][1];
 
-    for(int i = 0; i < cell_count; ++i){
-        uncover_cells(cells[i]);
+        cell_info* cell = &game_grid[x][y];
+        cell->is_visible = 1;
+    }
+
+    for(int i = 0; i < empty_cell_count; ++i){
+        uncover_cells(empty_cells[i]);
     }
 }
 
-void take_nearby_empty_cells(int** cells, int* cell_count, const int pos[2]){
-    int x = pos[0],
-        y = pos[1];
+inline void take_nearby_cells(int*** numbered_cells, int*** empty_cells, int* empty_cell_count, int* numbered_cell_count, const int pos[2]){
+    const int x = pos[0],
+              y = pos[1];
+
+    int **covered_cells = malloc(0);
+    int covered_cell_count = 0;
 
     // mine sopra
     if(x > 0){
-        take_nearby_row(cells, cell_count, x - 1, y);
+        take_nearby_row(&covered_cells, &covered_cell_count, x - 1, y);
     }
     // mine sotto
     if(x < ROWS - 1){
-        take_nearby_row(cells, cell_count, x + 1, y);
+        take_nearby_row(&covered_cells, &covered_cell_count, x + 1, y);
     }
+
     // mine sinistra
-    if(y > 0 && count_surrouding_mines((int[]){x, y - 1}) == 0 && game_grid[x][y - 1].is_visible == 1){
-    printf("\n1 ");
-        add_cell_to_array(&cells, cell_count, &(int[]){x, y - 1});
+    if(y > 0 && game_grid[x][y - 1].is_visible == 0){
+        add_cell_to_array(&covered_cells, &covered_cell_count, x, y - 1);
     }
 
     // mine destra
-    if(y < COLUMNS - 1 && count_surrouding_mines((int[]){x, y + 1}) == 0 && game_grid[x][y + 1].is_visible == 1){
-    printf("\n2 ");
-        add_cell_to_array(&cells, cell_count, &(int[]){x, y + 1});
+    if(y < COLUMNS - 1 && game_grid[x][y + 1].is_visible == 0){
+        add_cell_to_array(&covered_cells, &covered_cell_count, x, y + 1);
+    }
+
+    for(int i = 0; i < covered_cell_count; ++i) {
+        const int mine_count = count_surrounding_mines(covered_cells[i]);
+
+        if(mine_count != 0) {
+            add_cell_to_array(numbered_cells, numbered_cell_count, covered_cells[i][0], covered_cells[i][1]);
+        }
+        else add_cell_to_array(empty_cells, empty_cell_count, covered_cells[i][0], covered_cells[i][1]);
     }
 }
 
-void take_nearby_row(int** cells, int* cell_count, const int x, const int y){
-    if(count_surrouding_mines((int[]){x, y}) == 0 && game_grid[x][y].is_visible == 1){
-        printf("\n3 ");
-        add_cell_to_array(&cells, cell_count, &(int[]){x, y});
+inline void take_nearby_row(int*** cells, int* cell_count, const int x, const int y){
+    if(count_surrounding_mines((int[]){x, y}) == 0 && game_grid[x][y].is_visible == 0){
+        add_cell_to_array(cells, cell_count, x, y);
     }
 
-    if(y > 0 && count_surrouding_mines((int[]){x, y - 1}) == 0 && game_grid[x][y - 1].is_visible == 1){
-        printf("\n4 ");
-        add_cell_to_array(&cells, cell_count, &(int[]){x, y - 1});
+    if(y > 0 && game_grid[x][y - 1].is_visible == 0){
+        add_cell_to_array(cells, cell_count, x, y - 1);
     }
 
-    if(y < COLUMNS - 1 && count_surrouding_mines((int[]){x, y + 1}) == 0 && game_grid[x][y + 1].is_visible == 1){
-        printf("\n5 ");
-        add_cell_to_array(&cells, cell_count, &(int[]){x, y + 1});
+    if(y < COLUMNS - 1 && game_grid[x][y + 1].is_visible == 0){
+        add_cell_to_array(cells, cell_count, x, y + 1);
     }
 }
 
-void add_cell_to_array(int*** cells, int* length, int (*new_element)[2]){
-    int** new_array = (int**) calloc(++(*length), sizeof(int*));
+inline void add_cell_to_array(int*** cells, int* length, const int x, const int y){
+    *cells = realloc(*cells, (*length + 1) * sizeof(int*));
+    (*cells)[*length] = (int*) malloc(2 * sizeof(int));
 
-    for(int i = 0; i < *length - 1; ++i){
-        new_array[i] = (*cells)[i];
-    }
+    (*cells)[*length][0] = x;
+    (*cells)[*length][1] = y;
 
-    new_array[*length - 1] = *new_element;
-
-    free(*cells);
-
-    *cells = new_array;
+    (*length)++;
 }
 
 #endif // ENGINE_H_INCLUDED

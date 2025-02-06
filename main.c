@@ -5,10 +5,9 @@
 #include "interface.h"
 
 int main(){
-    return 0;
     init_grid();
 
-    while(1 == 1){
+    while(1){
         game_loop(position);
     }
 

@@ -1,8 +1,6 @@
 #ifndef CARATTERI_H_INCLUDED
 #define CARATTERI_H_INCLUDED
 
-#include "utils.h"
-
 #define ANSI_COLOR_WHITE "\033[38;5;15m"
 #define ANSI_COLOR_BLACK "\033[38;5;0m"
 #define ANSI_COLOR_GRAY_DK "\033[38;5;237m"
@@ -28,16 +26,16 @@
 // SIGNATURES
 //
 void print_grid();
-void horizontal_separator_line(const int line_number);
-void print_cell(const int pos[2], const int is_current);
-int count_surrouding_mines(const int pos[2]);
-int count_row(const int x, const int y);
-void print_number(const short int mine_count, const short int is_current);
+void horizontal_separator_line(int line_number);
+void print_cell(const int pos[2], int is_current);
+int count_surrounding_mines(const int pos[2]);
+int count_row(int x, int y);
+void print_number(short int mine_count, short int is_current);
 
 //
 // FUNCTIONS
 //
-extern void print_grid(){
+inline extern void print_grid(){
     for(int i = 0; i < ROWS; ++i){
 
         horizontal_separator_line(i);
@@ -62,7 +60,7 @@ extern void print_grid(){
     horizontal_separator_line(ROWS);
 }
 
-void horizontal_separator_line(const int line_number){
+inline void horizontal_separator_line(const int line_number){
     const int PRINT_LENGTH = COLUMNS * 4 + 1;
     printf("%s", ANSI_COLOR_GRAY_DK);
 
@@ -101,7 +99,7 @@ void horizontal_separator_line(const int line_number){
     printf("%s\n", ANSI_RESET);
 }
 
-void print_cell(const int pos[2], const int is_current){
+inline void print_cell(const int pos[2], const int is_current){
     const cell_info info = game_grid[pos[0]][pos[1]];
 
     if(info.is_visible == 0){
@@ -121,16 +119,15 @@ void print_cell(const int pos[2], const int is_current){
     }
 
     if(info.content == ENGINE_CHARS.EMPTY){
-        int mine_count = count_surrouding_mines(pos);
+        const int mine_count = count_surrounding_mines(pos);
         print_number(mine_count, is_current);
-        return;
     }
 }
 
-void print_number(const short int mine_count, const short int is_current){
+inline void print_number(const short int mine_count, const short int is_current){
     char displayed_char = '0' + mine_count;
     char* highlight = "";
-    char* color;
+    char* color = NULL;
 
 
     if(mine_count == 0){
@@ -169,6 +166,7 @@ void print_number(const short int mine_count, const short int is_current){
         case 8:
             color = ANSI_COLOR_PINK;
             break;
+        default: ;
     }
 
     printf("%s%s%s%c", ANSI_FORMAT_BOLD, highlight, color, displayed_char);
@@ -176,10 +174,10 @@ void print_number(const short int mine_count, const short int is_current){
 
 }
 
-int count_surrouding_mines(const int pos[2]){
-    int mine_count = 0,
-        x = pos[0],
-        y = pos[1];
+inline int count_surrounding_mines(const int pos[2]){
+    int mine_count = 0;
+    const int x = pos[0],
+              y = pos[1];
 
     // mine sopra
     if(x > 0){
@@ -204,7 +202,7 @@ int count_surrouding_mines(const int pos[2]){
     return mine_count;
 }
 
-int count_row(const int x, const int y){
+inline int count_row(const int x, const int y){
     int mine_count = 0;
 
     if(game_grid[x][y].content == ENGINE_CHARS.MINE){
