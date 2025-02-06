@@ -4,9 +4,10 @@
 #define ANSI_COLOR_WHITE "\033[38;5;15m"
 #define ANSI_COLOR_BLACK "\033[38;5;0m"
 #define ANSI_COLOR_GRAY_DK "\033[38;5;237m"
-#define ANSI_COLOR_GRAY_LG "\033[38;5;246m"
+#define ANSI_COLOR_GRAY_LG "\033[38;5;245m"
 
-#define ANSI_COLOR_RED "\033[38;5;9m"
+#define ANSI_COLOR_RED "\033[38;5;203m"
+#define ANSI_COLOR_RED_LG "\033[38;5;196m"
 #define ANSI_COLOR_BLUE "\033[38;5;33m"
 #define ANSI_COLOR_GREEN "\033[38;5;46m"
 #define ANSI_COLOR_PURPLE "\033[38;5;13m"
@@ -17,10 +18,7 @@
 #define ANSI_COLOR_SELECTED "\033[48;5;246m"
 
 #define ANSI_FORMAT_BOLD "\033[1m"
-
 #define ANSI_RESET "\033[0m"
-
-
 
 //
 // SIGNATURES
@@ -41,7 +39,7 @@ inline extern void print_grid(){
         horizontal_separator_line(i);
 
         for(int j = 0; j < COLUMNS; ++j){
-            printf("%s%c%s ", ANSI_COLOR_GRAY_DK, ENGINE_CHARS.GRID.VERTICAL, ANSI_RESET);
+            printf("%s%c%s ", ANSI_COLOR_GRAY_DK, GRID_CHARSET.VERTICAL, ANSI_RESET);
 
             const int pos[] = {i, j};
             if(i == position[0] && j == position[1]){
@@ -52,7 +50,7 @@ inline extern void print_grid(){
             printf("%s", ANSI_RESET);
 
             if(j == COLUMNS - 1){
-                printf("%s%c%s\n", ANSI_COLOR_GRAY_DK, ENGINE_CHARS.GRID.VERTICAL, ANSI_RESET);
+                printf("%s%c%s\n", ANSI_COLOR_GRAY_DK, GRID_CHARSET.VERTICAL, ANSI_RESET);
             }
         }
     }
@@ -67,33 +65,33 @@ inline void horizontal_separator_line(const int line_number){
     for(int i = 0; i < PRINT_LENGTH; ++i){
         if(i == 0){
             if(line_number == 0){
-                printf("%c", ENGINE_CHARS.GRID.CORNER_UP_SX);
+                printf("%c", GRID_CHARSET.CORNER_UP_SX);
             }
             else if (line_number == ROWS){
-                printf("%c", ENGINE_CHARS.GRID.CORNER_DOWN_SX);
+                printf("%c", GRID_CHARSET.CORNER_DOWN_SX);
             }
-            else printf("%c", ENGINE_CHARS.GRID.CORNER_VERTICAL_SX);
+            else printf("%c", GRID_CHARSET.CORNER_VERTICAL_SX);
         }
         else if(i == PRINT_LENGTH - 1){
             if(line_number == 0){
-                printf("%c", ENGINE_CHARS.GRID.CORNER_UP_DX);
+                printf("%c", GRID_CHARSET.CORNER_UP_DX);
             }
             else if (line_number == ROWS){
-                printf("%c", ENGINE_CHARS.GRID.CORNER_DOWN_DX);
+                printf("%c", GRID_CHARSET.CORNER_DOWN_DX);
             }
-            else printf("%c", ENGINE_CHARS.GRID.CORNER_VERTICAL_DX);;
+            else printf("%c", GRID_CHARSET.CORNER_VERTICAL_DX);;
         }
         else{
             if(i % 4 == 0){
                 if(line_number == 0){
-                    printf("%c", ENGINE_CHARS.GRID.CORNER_HORIZONTAL_DOWN);
+                    printf("%c", GRID_CHARSET.CORNER_HORIZONTAL_DOWN);
                 }
                 else if(line_number == ROWS){
-                    printf("%c", ENGINE_CHARS.GRID.CORNER_HORIZONTAL_UP);
+                    printf("%c", GRID_CHARSET.CORNER_HORIZONTAL_UP);
                 }
-                else printf("%c", ENGINE_CHARS.GRID.INNER_CORNER);;
+                else printf("%c", GRID_CHARSET.INNER_CORNER);;
             }
-            else printf("%c", ENGINE_CHARS.GRID.HORIZONTAL);
+            else printf("%c", GRID_CHARSET.HORIZONTAL);
         }
     }
     printf("%s\n", ANSI_RESET);
@@ -101,27 +99,38 @@ inline void horizontal_separator_line(const int line_number){
 
 inline void print_cell(const int pos[2], const int is_current){
     const cell_info info = game_grid[pos[0]][pos[1]];
+    char* highlight = "";
+    char* color = "";
+    char displayed_char = ' ';
 
-    if(info.is_visible == 0){
-        if(is_current == 0){
-            printf("%s%s%c ", ANSI_FORMAT_BOLD, ANSI_COLOR_GRAY_LG, ENGINE_CHARS.HIDDEN);
-        }
-        else printf("%s%s%c ", ANSI_FORMAT_BOLD, ANSI_COLOR_WHITE, ENGINE_CHARS.HIDDEN);
-        return;
-    }
-
-    if(info.content == ENGINE_CHARS.MINE){
-        if(is_current == 0){
-            printf("%s%s%c ", ANSI_FORMAT_BOLD, ANSI_COLOR_RED, ENGINE_CHARS.MINE);
-        }
-        else printf("%s%s%c ", ANSI_FORMAT_BOLD, ANSI_COLOR_RED, ENGINE_CHARS.MINE);
-        return;
-    }
-
-    if(info.content == ENGINE_CHARS.EMPTY){
+    if(info.content == ENGINE_CHARS.EMPTY && info.is_visible){
         const int mine_count = count_surrounding_mines(pos);
         print_number(mine_count, is_current);
+        return;
     }
+
+    if(is_current){
+        highlight = ANSI_COLOR_SELECTED;
+    }
+
+    if (info.content == ENGINE_CHARS.MINE && has_lost) {
+        displayed_char = ENGINE_CHARS.MINE;
+        color = ANSI_COLOR_RED;
+    }
+
+    if(!info.is_visible){
+        displayed_char = ENGINE_CHARS.HIDDEN;
+        color = ANSI_COLOR_GRAY_LG;
+    }
+
+    if (info.is_flagged) {
+        displayed_char = ENGINE_CHARS.FLAGGED;
+        color = ANSI_COLOR_RED;
+    }
+
+
+    printf("%s%s%s%c", highlight, ANSI_FORMAT_BOLD, color, displayed_char);
+    printf("%s ", ANSI_RESET);
 }
 
 inline void print_number(const short int mine_count, const short int is_current){
@@ -149,7 +158,7 @@ inline void print_number(const short int mine_count, const short int is_current)
             color = ANSI_COLOR_GREEN;
             break;
         case 3:
-            color = ANSI_COLOR_RED;
+            color = ANSI_COLOR_RED_LG;
             break;
         case 4:
             color = ANSI_COLOR_PURPLE;
@@ -172,52 +181,6 @@ inline void print_number(const short int mine_count, const short int is_current)
     printf("%s%s%s%c", ANSI_FORMAT_BOLD, highlight, color, displayed_char);
     printf("%s ", ANSI_RESET);
 
-}
-
-inline int count_surrounding_mines(const int pos[2]){
-    int mine_count = 0;
-    const int x = pos[0],
-              y = pos[1];
-
-    // mine sopra
-    if(x > 0){
-        mine_count += count_row(x - 1, y);
-    }
-
-    // mine sotto
-    if(x < ROWS - 1){
-        mine_count += count_row(x + 1, y);
-    }
-
-    // mine sinistra
-    if(y > 0 && game_grid[x][y - 1].content == ENGINE_CHARS.MINE){
-        ++mine_count;
-    }
-
-    // mine destra
-    if(y < COLUMNS - 1 && game_grid[x][y + 1].content == ENGINE_CHARS.MINE){
-        ++mine_count;
-    }
-
-    return mine_count;
-}
-
-inline int count_row(const int x, const int y){
-    int mine_count = 0;
-
-    if(game_grid[x][y].content == ENGINE_CHARS.MINE){
-        ++mine_count;
-    }
-
-    if(y > 0 && game_grid[x][y - 1].content == ENGINE_CHARS.MINE){
-        ++mine_count;
-    }
-
-    if(y < COLUMNS - 1 && game_grid[x][y + 1].content == ENGINE_CHARS.MINE){
-        ++mine_count;
-    }
-
-    return mine_count;
 }
 
 #endif // CARATTERI_H_INCLUDED
