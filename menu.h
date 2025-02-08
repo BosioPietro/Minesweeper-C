@@ -2,12 +2,9 @@
 #define MENU_H
 #define KEY_ENTER 13
 #define KEY_SPACEBAR 32
+#define MAX_COL_ROW_COUNT 20
 
 #include <unistd.h>
-
-int row_count = 10;
-int col_count = 10;
-int mine_count = 10;
 
 //
 // SIGNATURES
@@ -19,6 +16,7 @@ void show_controls();
 void print_settings();
 void handle_settings();
 void select_setting();
+void change_value();
 
 //
 // GLOBAL VARS
@@ -47,7 +45,6 @@ inline void handle_menu() {
     do{
         fflush(stdin);
         command = _getch();
-        printf("%d", command);
     }
     while(command != KEY_ENTER && command != KEY_SPACEBAR && command != ENGINE_COMMANDS.KEY_UP && command != ENGINE_COMMANDS.KEY_DOWN);
 
@@ -74,22 +71,88 @@ inline void handle_menu() {
 
 inline void select_option() {
     switch(selected_option) {
-        default:
-            case 1:
+        case 0:
+            game_state = GAME_STATE.PLAYING;
+            break;
+        case 1:
             selected_setting = 0;
             game_state =  GAME_STATE.OPTIONS;
-
-            do {
-                handle_settings();
-            }while(game_state == GAME_STATE.OPTIONS);
             break;
         case 2:
             show_controls();
             break;
+        default:
         case 3:
             game_state = GAME_STATE.QUIT;
             break;
     }
+}
+
+inline void change_value() {
+    const char* PROMPT = ANSI_FORMAT_BOLD ANSI_COLOR_GRAY_LG "Insert new value ";
+    char *title;
+    int max_value;
+    int user_value;
+    char* range_string = malloc(strlen(ANSI_COLOR_GRAY_DK) + 5 + 1);
+    const char* RANGE_STRING_END = "]" ANSI_COLOR_GRAY_LG ": " ANSI_RESET ANSI_COLOR_WHITE;
+    range_string[0] = '\0';
+    strcat(range_string, ANSI_COLOR_GRAY_DK "[0 - ");
+
+    switch (selected_setting) {
+        default:
+        case 0:
+            title = ANSI_FORMAT_BOLD ANSI_COLOR_RED "EDIT ROWS COUNT\n\n";
+            break;
+        case 1:
+            title = ANSI_FORMAT_BOLD ANSI_COLOR_RED "EDIT COLUMNS COUNT\n\n";
+            break;
+        case 2:
+            title = ANSI_FORMAT_BOLD ANSI_COLOR_RED "EDIT MINE COUNT\n\n";
+            break;
+    }
+
+    if (selected_setting == 2) {
+        max_value = row_count * col_count;
+    }
+    else max_value = MAX_COL_ROW_COUNT;
+
+    char range_string_value[3];
+    itoa(max_value, range_string_value, 10);
+    range_string = realloc(range_string, strlen(range_string) + 3 + strlen(RANGE_STRING_END));
+    strcat(range_string, range_string_value);
+    strcat(range_string, RANGE_STRING_END);
+
+    char *print_string = malloc(strlen(title) + strlen(PROMPT) + strlen(range_string));
+    print_string[0] = '\0';
+
+    strcat(print_string, title);
+    strcat(print_string, PROMPT);
+    strcat(print_string, range_string);
+
+    do {
+        write(STDOUT_FILENO, print_string, strlen(print_string));
+        scanf("%d", &user_value);
+    }while (user_value < 0 || user_value > max_value);
+
+    switch (selected_setting) {
+        case 0:
+            row_count = user_value;
+            break;
+        case 1:
+            col_count = user_value;
+            break;
+        case 2:
+            mine_count = user_value;
+            break;
+        default:
+    }
+
+
+    if (mine_count > row_count * col_count) {
+        mine_count = row_count * col_count;
+    }
+
+    free(range_string);
 }
 
 inline void show_controls() {
@@ -101,7 +164,7 @@ inline void show_controls() {
         ANSI_COLOR_WHITE "S" ANSI_COLOR_GRAY_DK " - " ANSI_COLOR_GRAY_LG "Move down\n",
         ANSI_COLOR_WHITE "D" ANSI_COLOR_GRAY_DK " - " ANSI_COLOR_GRAY_LG "Move right\n",
         ANSI_COLOR_WHITE "Q" ANSI_COLOR_GRAY_DK " - " ANSI_COLOR_GRAY_LG "Uncover cell\n",
-        ANSI_COLOR_WHITE "E" ANSI_COLOR_GRAY_DK " - " ANSI_COLOR_GRAY_LG "Place/remove flag\n",
+        ANSI_COLOR_WHITE "Space" ANSI_COLOR_GRAY_DK " - " ANSI_COLOR_GRAY_LG "Place/remove flag\n",
     };
 
     int print_length = 1 + strlen(STRING_TITLE) + strlen(STRING_EXIT);
@@ -167,6 +230,11 @@ inline void handle_settings() {
 
 inline void select_setting() {
     switch (selected_setting) {
+        case 0:
+        case 1:
+        case 2:
+            change_value();
+        break;
         default:
         case 3:
             game_state = GAME_STATE.MAIN_MENU;
@@ -183,10 +251,10 @@ inline void print_settings() {
     itoa(row_count, row_count_string, 10);
 
     char col_count_string[3];
-    itoa(row_count, col_count_string, 10);
+    itoa(col_count, col_count_string, 10);
 
     char mine_count_string[3];
-    itoa(row_count, mine_count_string, 10);
+    itoa(mine_count, mine_count_string, 10);
 
     const char* SETTINGS[] = {
         "Rows count: " ANSI_RESET,

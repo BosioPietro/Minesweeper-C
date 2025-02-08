@@ -6,10 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define ROWS 10
-#define COLUMNS 10
-#define MINES 10
-
 //
 // SIGNATURES
 //
@@ -30,41 +26,54 @@ short int is_cell_flag(const int coords[2]);
 void take_nearby_row(int*** cells, int* cell_count, short int (*filter_fn)(const int[2]), int x, int y);
 void filter_surrounding_cells(int*** dest_array, int* dest_array_length, short int (*filter_fn)(const int[2]), const int pos[2]);
 void add_cell_to_array(int*** cells, int* length, int x, int y);
-void debug();
 
 //
 // GLOBAL VARS
 //
 playing_state game_state = GAME_STATE.MAIN_MENU;
+int row_count = 10;
+int col_count = 10;
+int mine_count = 10;
+
 int position[2] = {0, 0};
-cell_info game_grid[ROWS][COLUMNS];
+cell_info** game_grid = NULL;
 short int mines_placed = 0;
 short int has_lost = 0;
 short int has_won = 0;
-
 
 //
 // MAIN FUNCTIONS
 //
 inline void game_loop(){
-    char command;
+    while(!has_lost && !has_won){
+        char command;
+        print_grid();
 
-    print_grid();
+        do{
+            fflush(stdin);
+            command = _getch();
+        }
+        while(is_valid_input(command) == 0);
 
-    do{
-        fflush(stdin);
-        command = _getch();
+        system("@cls||clear");
+        handle_input(command, position);
+        check_win();
     }
-    while(is_valid_input(command) == 0);
-
-    system("@cls||clear");
-    handle_input(command, position);
-    check_win();
 }
 
 inline void init_grid(){
-    for(int x = 0; x < ROWS; ++x){
-        for(int y = 0; y < COLUMNS; ++y){
+    if (game_grid != NULL) {
+        for (int i = 0; i < row_count; ++i) {
+            free(game_grid[i]);
+        }
+        free(game_grid);
+        game_grid = NULL;
+    }
+
+    game_grid = (cell_info**) malloc(row_count * sizeof(cell_info*));
+    for(int x = 0; x < row_count; ++x){
+        game_grid[x] = (cell_info*)malloc(col_count * sizeof(cell_info));
+        for(int y = 0; y < col_count; ++y){
             cell_info *const cell = &game_grid[x][y];
             cell->is_flagged = 0;
             cell->is_visible = 0;
@@ -99,7 +108,7 @@ inline void handle_input(const key command, int coords[2]){
             }
             break;
         case KEY_DOWN:
-            if(position[0] < ROWS - 1) {
+            if(position[0] < row_count - 1) {
                 ++coords[0];
             }
             break;
@@ -109,7 +118,7 @@ inline void handle_input(const key command, int coords[2]){
             }
             break;
         case KEY_RIGHT:
-            if(position[1] < COLUMNS - 1) {
+            if(position[1] < col_count - 1) {
                 ++coords[1];
             }
             break;
@@ -171,11 +180,11 @@ inline void place_mines(){
     srand(time(NULL));
     mines_placed = 1;
 
-    for(int i = 0; i < MINES; ++i){
+    for(int i = 0; i < mine_count; ++i){
         int x, y;
         do{
-            x = rand() % (ROWS + 1);
-            y = rand() % (COLUMNS + 1);
+            x = rand() % (row_count + 1);
+            y = rand() % (col_count + 1);
 
         }while(game_grid[x][y].content == ENGINE_CHARS.MINE || ( x == position[0] && y == position[1] ));
 
@@ -217,15 +226,15 @@ inline void check_win() {
     int i = 0, j = 0;
     cell_info cell = game_grid[0][0];
 
-    while(i < ROWS && (cell.content == ENGINE_CHARS.MINE || (cell.content == ENGINE_CHARS.EMPTY && cell.is_visible))) {
+    while(i < row_count && (cell.content == ENGINE_CHARS.MINE || (cell.content == ENGINE_CHARS.EMPTY && cell.is_visible))) {
         j = 0;
-        while(j < COLUMNS && (cell.content == ENGINE_CHARS.MINE || (cell.content == ENGINE_CHARS.EMPTY && cell.is_visible))) {
+        while(j < col_count && (cell.content == ENGINE_CHARS.MINE || (cell.content == ENGINE_CHARS.EMPTY && cell.is_visible))) {
             cell = game_grid[i][++j];
         }
         ++i;
     }
 
-    has_won = i == ROWS && j == COLUMNS;
+    has_won = i == row_count && j == col_count;
 }
 
 //
@@ -264,7 +273,7 @@ inline void filter_surrounding_cells(int*** dest_array, int* dest_array_length, 
         take_nearby_row(dest_array, dest_array_length, filter_fn, x - 1, y);
     }
     // mine sotto
-    if(x < ROWS - 1){
+    if(x < row_count - 1){
         take_nearby_row(dest_array, dest_array_length,filter_fn, x + 1, y);
     }
 
@@ -274,7 +283,7 @@ inline void filter_surrounding_cells(int*** dest_array, int* dest_array_length, 
     }
 
     // mine destra
-    if(y < COLUMNS - 1 && filter_fn((int[]){x, y + 1})){
+    if(y < col_count - 1 && filter_fn((int[]){x, y + 1})){
         add_cell_to_array(dest_array, dest_array_length, x, y + 1);
     }
 }
@@ -288,7 +297,7 @@ inline void take_nearby_row(int*** cells, int* cell_count, short int (*filter_fn
         add_cell_to_array(cells, cell_count, x, y - 1);
     }
 
-    if(y < COLUMNS - 1 && filter_fn((int[]){x, y + 1})){
+    if(y < row_count - 1 && filter_fn((int[]){x, y + 1})){
         add_cell_to_array(cells, cell_count, x, y + 1);
     }
 }
@@ -302,15 +311,4 @@ inline void add_cell_to_array(int*** cells, int* length, const int x, const int 
 
     (*length)++;
 }
-
-inline void debug() {
-    printf("{ %d %d}\n", position[0], position[1]);
-    for(int i = 0; i < ROWS; ++i) {
-        for(int j = 0; j < COLUMNS; ++j) {
-            printf("%d ", game_grid[i][j].content == ENGINE_CHARS.MINE);
-        }
-        printf("\n");
-    }
-}
-
 #endif // ENGINE_H_INCLUDED

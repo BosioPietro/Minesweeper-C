@@ -100,7 +100,7 @@ typedef enum {
     KEY_DOWN = 115,
     KEY_LEFT = 97,
     KEY_RIGHT = 100,
-    KEY_INTERACT = 113,
+    KEY_INTERACT = 32,
     KEY_FLAG = 101
 } key;
 

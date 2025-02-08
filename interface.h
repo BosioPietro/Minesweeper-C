@@ -40,16 +40,17 @@ inline extern void print_grid(){
     // aggrego tutto in una stringa per motivi di velocità
     // chiamare più volte printf/write rallenta molto
 
-    char* string_grid = "\0";
+    char* string_grid = malloc(1);
+    string_grid[0] = '\0';
     int string_grid_length = 1;
 
-    for(int i = 0; i < ROWS; ++i){
+    for(int i = 0; i < row_count; ++i){
         char* string_row;
         int string_row_length = 1;
 
         horizontal_separator_line(i, &string_row, &string_row_length);
 
-        for(int j = 0; j < COLUMNS; ++j){
+        for(int j = 0; j < col_count; ++j){
             const int pos[] = {i, j};
             int cell_length = 1;
 
@@ -76,7 +77,7 @@ inline extern void print_grid(){
             strcat(cell_string, value_string);
 
 
-            if(j == COLUMNS - 1){
+            if(j == col_count - 1){
                 const int rigth_sep_length = strlen(ANSI_COLOR_GRAY_DK) + 1 + strlen(ANSI_RESET) + 2;
                 char *rigth_separator = malloc(rigth_sep_length);
 
@@ -90,20 +91,27 @@ inline extern void print_grid(){
 
                 cell_string = realloc(cell_string, cell_length);
                 strcat(cell_string, rigth_separator);
+                free(rigth_separator);
             }
 
             string_row_length += strlen(cell_string);
             string_row = realloc(string_row, string_row_length);
             strcat(string_row, cell_string);
+
+            free(cell_string);
+            free(value_string);
+            free(left_separator);
         }
 
         string_grid_length += strlen(string_row);
         string_grid = realloc(string_grid, string_grid_length);
         strcat(string_grid, string_row);
+
+        free(string_row);
     }
 
     char* last_separator;
-    horizontal_separator_line(ROWS, &last_separator, &string_grid_length);
+    horizontal_separator_line(row_count, &last_separator, &string_grid_length);
 
     string_grid = realloc(string_grid, string_grid_length);
     strcat(string_grid, last_separator);
@@ -113,10 +121,11 @@ inline extern void print_grid(){
     // uguale a printf ma manda in output direttamente in byte
     // e skippa la formattazione rendendolo più veloce
     write(STDOUT_FILENO, string_grid, strlen(string_grid));
+    free(string_grid);
 }
 
 inline void horizontal_separator_line(const int line_number, char** cell_string, int *print_length){
-    const int PRINT_LENGTH = COLUMNS * 4 + 1;
+    const int PRINT_LENGTH = col_count * 4 + 1;
     char buffer[PRINT_LENGTH + 1];
 
     for(int i = 0; i < PRINT_LENGTH; ++i){
@@ -124,7 +133,7 @@ inline void horizontal_separator_line(const int line_number, char** cell_string,
             if(line_number == 0){
                 buffer[i] = GRID_CHARSET.CORNER_UP_SX;
             }
-            else if (line_number == ROWS){
+            else if (line_number == row_count){
                 buffer[i] = GRID_CHARSET.CORNER_DOWN_SX;
             }
             else buffer[i] = GRID_CHARSET.CORNER_VERTICAL_SX;
@@ -133,7 +142,7 @@ inline void horizontal_separator_line(const int line_number, char** cell_string,
             if(line_number == 0){
                 buffer[i] = GRID_CHARSET.CORNER_UP_DX;
             }
-            else if (line_number == ROWS){
+            else if (line_number == row_count){
                 buffer[i] = GRID_CHARSET.CORNER_DOWN_DX;
             }
             else buffer[i] = GRID_CHARSET.CORNER_VERTICAL_DX;
@@ -143,7 +152,7 @@ inline void horizontal_separator_line(const int line_number, char** cell_string,
                 if(line_number == 0){
                     buffer[i] = GRID_CHARSET.CORNER_HORIZONTAL_DOWN;
                 }
-                else if(line_number == ROWS){
+                else if(line_number == row_count){
                     buffer[i] = GRID_CHARSET.CORNER_HORIZONTAL_UP;
                 }
                 else buffer[i] = GRID_CHARSET.INNER_CORNER;
