@@ -5,12 +5,21 @@
 #include "interface.h"
 #include "menu.h"
 
-playing_state game_state = GAME_STATE.MAIN_MENU;
-
 int main(){
 
-    while (1 == 1) {
-        handle_menu();
+    while (game_state != GAME_STATE.QUIT) {
+
+        switch (game_state) {
+            case MAIN_MENU:
+                handle_menu();
+                break;
+            case OPTIONS:
+                break;
+            case PLAYING:
+                break;
+            case QUIT:
+                break;
+        }
     }
 
     // init_grid();

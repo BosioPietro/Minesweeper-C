@@ -35,6 +35,7 @@ void debug();
 //
 // GLOBAL VARS
 //
+playing_state game_state = GAME_STATE.MAIN_MENU;
 int position[2] = {0, 0};
 cell_info game_grid[ROWS][COLUMNS];
 short int mines_placed = 0;
@@ -223,7 +224,6 @@ inline void check_win() {
         }
         ++i;
     }
-
 
     has_won = i == ROWS && j == COLUMNS;
 }

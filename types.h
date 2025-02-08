@@ -125,19 +125,22 @@ commands ENGINE_COMMANDS = {
 typedef enum {
     MAIN_MENU,
     OPTIONS,
-    PLAYING
+    PLAYING,
+    QUIT
 } playing_state;
 
 typedef struct {
     const playing_state MAIN_MENU;
     const playing_state OPTIONS;
     const playing_state PLAYING;
+    const playing_state QUIT;
 } game_state_menu;
 
 const game_state_menu GAME_STATE = {
     .MAIN_MENU = MAIN_MENU,
     .OPTIONS = OPTIONS,
-    .PLAYING = PLAYING
+    .PLAYING = PLAYING,
+    .QUIT = QUIT
 };
 
 #endif //TYPES_H
