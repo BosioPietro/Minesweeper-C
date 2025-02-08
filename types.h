@@ -122,4 +122,22 @@ commands ENGINE_COMMANDS = {
     .KEY_FLAG = KEY_FLAG
 };
 
+typedef enum {
+    MAIN_MENU,
+    OPTIONS,
+    PLAYING
+} playing_state;
+
+typedef struct {
+    const playing_state MAIN_MENU;
+    const playing_state OPTIONS;
+    const playing_state PLAYING;
+} game_state_menu;
+
+const game_state_menu GAME_STATE = {
+    .MAIN_MENU = MAIN_MENU,
+    .OPTIONS = OPTIONS,
+    .PLAYING = PLAYING
+};
+
 #endif //TYPES_H

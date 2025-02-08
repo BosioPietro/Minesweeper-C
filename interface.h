@@ -40,9 +40,8 @@ inline extern void print_grid(){
     // aggrego tutto in una stringa per motivi di velocità
     // chiamare più volte printf/write rallenta molto
 
-    char* string_grid = malloc(1);
+    char* string_grid = "\0";
     int string_grid_length = 1;
-    string_grid[0] = '\0';
 
     for(int i = 0; i < ROWS; ++i){
         char* string_row;
@@ -60,7 +59,7 @@ inline extern void print_grid(){
             strcat(left_separator, ANSI_COLOR_GRAY_DK);
             strcat(left_separator, (char[]){GRID_CHARSET.VERTICAL, '\0'});
             strcat(left_separator, ANSI_RESET);
-            strcat(left_separator, (char[]){' ', '\0'});
+            strcat(left_separator, " \0");
             cell_length += left_sep_length;
 
             char *value_string = malloc(0);
@@ -85,7 +84,7 @@ inline extern void print_grid(){
                 strcat(rigth_separator, ANSI_COLOR_GRAY_DK);
                 strcat(rigth_separator, (char[]){GRID_CHARSET.VERTICAL, '\0'});
                 strcat(rigth_separator, ANSI_RESET);
-                strcat(rigth_separator, (char[]){'\n', '\0'});
+                strcat(rigth_separator, "\n\0");
 
                 cell_length += rigth_sep_length;
 
@@ -161,7 +160,7 @@ inline void horizontal_separator_line(const int line_number, char** cell_string,
     strcat(*cell_string, ANSI_COLOR_GRAY_DK);
     strcat(*cell_string, buffer);
     strcat(*cell_string, ANSI_RESET);
-    strcat(*cell_string, (char[]){'\n', '\0'});
+    strcat(*cell_string, "\n\0");
 }
 
 inline void print_cell(const int pos[2], const int is_current, char** cell_string, int *print_length){
@@ -205,7 +204,7 @@ inline void print_cell(const int pos[2], const int is_current, char** cell_strin
     strcat(*cell_string, color);
     strcat(*cell_string, (char[]) {displayed_char, '\0'});
     strcat(*cell_string, ANSI_RESET);
-    strcat(*cell_string, (char[]) {' ', '\0'});
+    strcat(*cell_string, " \0");
 }
 
 inline void print_number(const short int mine_count, const short int is_current, char** cell_string, int *print_length){
@@ -262,7 +261,7 @@ inline void print_number(const short int mine_count, const short int is_current,
     strcat(*cell_string, color);
     strcat(*cell_string, (char[]) {displayed_char, '\0'});
     strcat(*cell_string, ANSI_RESET);
-    strcat(*cell_string, (char[]) {' ', '\0'});
+    strcat(*cell_string, " \0");
 }
 
 #endif // CARATTERI_H_INCLUDED

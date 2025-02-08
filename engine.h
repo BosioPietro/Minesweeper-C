@@ -125,9 +125,7 @@ inline void handle_input(const key command, int coords[2]){
             // done as the first move
             // prevents the user from losing immediately
             if(mines_placed == 0){
-                debug();
                 place_mines();
-                debug();
             }
 
             // flagged cells can't be interacted with
