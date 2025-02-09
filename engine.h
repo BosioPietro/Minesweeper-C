@@ -33,7 +33,7 @@ void add_cell_to_array(int*** cells, int* length, int x, int y);
 playing_state game_state = GAME_STATE.MAIN_MENU;
 int row_count = 10;
 int col_count = 10;
-int mine_count = 1;
+int mine_count = 10;
 
 int position[2] = {0, 0};
 cell_info** game_grid = NULL;

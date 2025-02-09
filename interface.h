@@ -27,6 +27,9 @@
 // SIGNATURES
 //
 void print_grid();
+int flagged_cells_count();
+void print_header_string(char** print_string);
+void get_header_message(char** header_message, int* visual_length);
 void horizontal_separator_line(int line_number, char** cell_string, int *print_length);
 void print_cell(const int pos[2], int is_current, char** cell_string, int *print_length);
 int count_surrounding_mines(const int pos[2]);
@@ -40,9 +43,15 @@ inline extern void print_grid(){
     // aggrego tutto in una stringa per motivi di velocità
     // chiamare più volte printf/write rallenta molto
 
-    char* string_grid = malloc(1);
-    string_grid[0] = '\0';
+    char* string_grid;
     int string_grid_length = 1;
+
+    char* header_string;
+    print_header_string(&header_string);
+
+    string_grid_length += strlen(header_string);
+    string_grid = malloc(string_grid_length);
+    strcpy(string_grid, header_string);
 
     for(int i = 0; i < row_count; ++i){
         char* string_row;
@@ -271,6 +280,112 @@ inline void print_number(const short int mine_count, const short int is_current,
     strcat(*cell_string, (char[]) {displayed_char, '\0'});
     strcat(*cell_string, ANSI_RESET);
     strcat(*cell_string, " \0");
+}
+
+inline void print_header_string(char** print_string) {
+    const int HEADER_LENGTH = row_count * 4 + 1;
+    char* mid_padding;
+    int visual_length;
+    char* header_message;
+
+    get_header_message(&header_message, &visual_length);
+
+    int final_header_length;
+
+    if (HEADER_LENGTH > visual_length) {
+        final_header_length = HEADER_LENGTH;
+        mid_padding = malloc(HEADER_LENGTH - visual_length + 1);
+        memset(mid_padding, ' ', HEADER_LENGTH - visual_length);
+        mid_padding[HEADER_LENGTH - visual_length] = '\0';
+    }
+    else {
+        final_header_length = visual_length;
+        mid_padding = malloc(1);
+        mid_padding[0] = '\0';
+    }
+
+    char* header_top = malloc(final_header_length + 1);
+    char* header_bottom = malloc(final_header_length + 1);
+
+    memset(header_top, GRID_CHARSET.HORIZONTAL, final_header_length);
+    memset(header_bottom, GRID_CHARSET.HORIZONTAL, final_header_length);
+
+    header_top[final_header_length] = '\0';
+    header_bottom[final_header_length] = '\0';
+
+    header_top[0] = GRID_CHARSET.CORNER_UP_SX;
+    header_top[final_header_length - 1] = GRID_CHARSET.CORNER_UP_DX;
+
+    header_bottom[0] = GRID_CHARSET.CORNER_DOWN_SX;
+    header_bottom[final_header_length - 1] = GRID_CHARSET.CORNER_DOWN_DX;
+
+    // il 4 per i \n
+    *print_string = malloc( 1 +
+        strlen(header_top) * 2 +
+        strlen(ANSI_COLOR_GRAY_DK) * 2 +
+        strlen(header_message) + 4 +
+        strlen(mid_padding)
+    );
+    *print_string[0] = '\0';
+
+
+    strcat(*print_string, ANSI_COLOR_GRAY_DK);
+    strcat(*print_string, header_top);
+    strcat(*print_string, "\n");
+    strcat(*print_string, (char[]){ GRID_CHARSET.VERTICAL, ' ', '\0' });
+    strcat(*print_string, header_message);
+    strcat(*print_string, mid_padding);
+    strcat(*print_string, ANSI_COLOR_GRAY_DK);
+    strcat(*print_string, (char[]){ GRID_CHARSET.VERTICAL, ' ', '\0' });
+    strcat(*print_string, "\n");
+    strcat(*print_string, header_bottom);
+    strcat(*print_string, "\n");
+
+    free(header_message);
+    free(header_top);
+    free(header_bottom);
+    free(mid_padding);
+}
+
+inline void get_header_message(char** header_message, int* visual_length) {
+    const char* IN_GAME = ANSI_FORMAT_BOLD ANSI_COLOR_GRAY_LG "Remaining mines: " ANSI_RESET ANSI_COLOR_WHITE;
+    const char* WIN = ANSI_COLOR_GREEN ANSI_FORMAT_BOLD "You won!" ANSI_RESET ANSI_COLOR_GRAY_DK " (Press any key to continue)";
+    const char* LOSE = ANSI_COLOR_RED  ANSI_FORMAT_BOLD "You lost!" ANSI_COLOR_GRAY_DK " (Press any key to continue)";
+
+    if (has_won) {
+        *header_message = malloc(strlen(WIN) + 1);
+        strcpy(*header_message, WIN);
+        // + 2 per la lunghezza del separatore e spazio iniziale
+        *visual_length = 8 + 28 + 2 + 1;
+    }
+    else if (has_lost) {
+        *header_message = malloc(strlen(LOSE) + 1);
+        strcpy(*header_message, LOSE);
+        *visual_length = 9 + 28 + 2 + 1;
+    }
+    else {
+        const int remaining_mines = mine_count - flagged_cells_count();
+        char remaining_mines_string[4];
+        itoa(remaining_mines, remaining_mines_string, 10);
+
+        *header_message = malloc(strlen(IN_GAME) + strlen(remaining_mines_string) + 1);
+        strcpy(*header_message, IN_GAME);
+        strcat(*header_message, remaining_mines_string);
+        *visual_length = 17 + strlen(remaining_mines_string) + 1 + 2;
+    }
+
+}
+
+inline int flagged_cells_count() {
+    int count = 0;
+    for (int i = 0; i < row_count; ++i) {
+        for (int j = 0; j < col_count; ++j) {
+            if (game_grid[i][j].is_flagged) {
+                ++count;
+            }
+        }
+    }
+    return count;
 }
 
 #endif // CARATTERI_H_INCLUDED
