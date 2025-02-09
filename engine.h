@@ -32,8 +32,8 @@ void add_cell_to_array(int*** cells, int* length, int x, int y);
 // GLOBAL VARS
 //
 playing_state game_state = GAME_STATE.MAIN_MENU;
-int row_count = 11;
-int col_count = 11;
+int row_count = 10;
+int col_count = 10;
 int mine_count = 10;
 
 int position[2] = {0, 0};
@@ -73,6 +73,10 @@ inline void game_loop(){
     has_won = 0;
     mines_placed = 0;
     game_state = GAME_STATE.MAIN_MENU;
+    position[0] = position[1] = 0;
+
+    free(game_grid);
+    game_grid = NULL;
 }
 
 inline void init_grid(){

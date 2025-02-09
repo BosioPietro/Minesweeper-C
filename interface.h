@@ -61,15 +61,15 @@ void show_change_setting(short int setting_index);
 //
 inline extern void show_grid(){
     // Prende l'header
-    char* header_string;
-    // get_header_string(&header_string);
+    char* header_string = NULL;
+    get_header_string(&header_string);
+
 
     // Inizializza la stringa della griglia
     // e vi ci appende l'header
-    int string_grid_length = 1; //+ strlen(header_string);
+    int string_grid_length = 1 + strlen(header_string);
     char *string_grid = malloc(string_grid_length);
-    string_grid[0] = '\0';
-    // strcpy(string_grid, header_string);
+    strcpy(string_grid, header_string);
 
     // Genera la stringa per la griglia
     for(int i = 0; i < row_count; ++i){
@@ -139,18 +139,39 @@ inline extern void show_grid(){
 
         // Appende la riga alla griglia
         string_grid_length += strlen(string_row);
-        string_grid = realloc(string_grid, string_grid_length);
+        char *temp = realloc(string_grid, string_grid_length);
+
+        // Gestisce il leak se realloc non riesce ad alloccare
+        if (temp != NULL) {
+            string_grid = temp;
+        }
+        else {
+            free(string_grid);
+            return;
+        }
+
         strcat(string_grid, string_row);
 
         free(string_row);
     }
+
     // Ultima riga in basso che chiude la griglia
     char* last_separator;
     horizontal_separator_line(row_count, &last_separator, &string_grid_length);
-    string_grid = realloc(string_grid, string_grid_length);
+
+    char* temp = realloc(string_grid, string_grid_length);
+    if (temp != NULL) {
+        string_grid = temp;
+    }
+    else {
+        free(string_grid);
+        return;
+    }
     strcat(string_grid, last_separator);
 
     write(STDOUT_FILENO, string_grid, strlen(string_grid));
+
+    free(last_separator);
     free(string_grid);
     free(header_string);
 }
@@ -303,7 +324,7 @@ inline void get_number_string(const short int mine_count, const short int is_cur
         case 8:
             color = ANSI_COLOR_PINK;
             break;
-        default: ;
+        default:
     }
 
     // Costruisco la stringa da stampare
@@ -374,7 +395,7 @@ inline void get_header_string(char** print_string) {
         strlen(header_top) * 2 +
         strlen(ANSI_COLOR_GRAY_DK) * 2 +
         strlen(header_message) + 4 +  // il 4 per i \n
-        strlen(mid_padding)
+        strlen(mid_padding) + 1
     );
     *print_string[0] = '\0';
 
@@ -486,7 +507,16 @@ inline void show_change_setting(const short int setting_index) {
     // Crea la stringa col range di valori ammesso
     char range_string_value[3];
     itoa(max_value, range_string_value, 10);
-    range_string = realloc(range_string, strlen(range_string) + 3 + strlen(RANGE_STRING_END));
+
+    // Previene il memory leak nel caso in cui realloc non
+    // riesca a trovare spazio
+    char* temp = realloc(range_string, strlen(range_string) + 3 + strlen(RANGE_STRING_END));
+
+    if (temp != NULL) {
+        range_string = temp;
+        temp = NULL;
+    } else return free(range_string);
+
     strcat(range_string, range_string_value);
     strcat(range_string, RANGE_STRING_END);
 
@@ -501,6 +531,8 @@ inline void show_change_setting(const short int setting_index) {
     write(STDOUT_FILENO, print_string, strlen(print_string));
 
     free(range_string);
+    free(print_string);
+    free(temp);
 }
 
 inline void show_menu(const int OPTIONS_NUMBER, const char **MENU_OPTIONS, const int selected_option){
