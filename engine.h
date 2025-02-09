@@ -33,7 +33,7 @@ void add_cell_to_array(int*** cells, int* length, int x, int y);
 playing_state game_state = GAME_STATE.MAIN_MENU;
 int row_count = 10;
 int col_count = 10;
-int mine_count = 10;
+int mine_count = 1;
 
 int position[2] = {0, 0};
 cell_info** game_grid = NULL;
@@ -59,6 +59,15 @@ inline void game_loop(){
         handle_input(command, position);
         check_win();
     }
+
+    print_grid();
+    _getch();
+
+    // reset
+    system("@cls||clear");
+    has_lost = 0;
+    has_won = 0;
+    game_state = GAME_STATE.MAIN_MENU;
 }
 
 inline void init_grid(){
@@ -134,6 +143,7 @@ inline void handle_input(const key command, int coords[2]){
         case KEY_INTERACT:
             // done as the first move
             // prevents the user from losing immediately
+
             if(mines_placed == 0){
                 place_mines();
             }
@@ -183,8 +193,8 @@ inline void place_mines(){
     for(int i = 0; i < mine_count; ++i){
         int x, y;
         do{
-            x = rand() % (row_count + 1);
-            y = rand() % (col_count + 1);
+            x = rand() % row_count;
+            y = rand() % col_count;
 
         }while(game_grid[x][y].content == ENGINE_CHARS.MINE || ( x == position[0] && y == position[1] ));
 
@@ -223,18 +233,22 @@ inline void uncover_cells(const int coords[2]){
 }
 
 inline void check_win() {
-    int i = 0, j = 0;
-    cell_info cell = game_grid[0][0];
+    int i = 0, j = 0, is_cell_hidden = 0;
+    cell_info cell;
 
-    while(i < row_count && (cell.content == ENGINE_CHARS.MINE || (cell.content == ENGINE_CHARS.EMPTY && cell.is_visible))) {
+    while(i < row_count && !is_cell_hidden) {
         j = 0;
-        while(j < col_count && (cell.content == ENGINE_CHARS.MINE || (cell.content == ENGINE_CHARS.EMPTY && cell.is_visible))) {
-            cell = game_grid[i][++j];
+        while(j < col_count && !is_cell_hidden) {
+            cell = game_grid[i][j++];
+
+            if (cell.content == ENGINE_CHARS.EMPTY) {
+                is_cell_hidden = !cell.is_visible;
+            }
         }
         ++i;
     }
 
-    has_won = i == row_count && j == col_count;
+    has_won = !is_cell_hidden;
 }
 
 //
