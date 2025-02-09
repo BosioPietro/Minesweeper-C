@@ -28,5 +28,4 @@ int main(){
 // TODO
 // semplifica condizioni
 // const, short, e unsigned
-// selettore mine
 
