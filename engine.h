@@ -22,6 +22,7 @@ void check_win();
 int count_surrounding_mines(const int pos[2]);
 short int is_cell_mine(const int coords[2]);
 short int is_cell_discoverable(const int coords[2]);
+short int is_cell_hidden(const int coords[2]);
 short int is_cell_flag(const int coords[2]);
 void take_nearby_row(int*** cells, int* cell_count, short int (*filter_fn)(const int[2]), int x, int y);
 void filter_surrounding_cells(int*** dest_array, int* dest_array_length, short int (*filter_fn)(const int[2]), const int pos[2]);
@@ -60,6 +61,7 @@ inline void game_loop(){
         check_win();
     }
 
+    system("@cls||clear");
     print_grid();
     _getch();
 
@@ -172,7 +174,7 @@ inline void handle_input(const key command, int coords[2]){
 
                     if (surrounding_flags_count == mine_count) {
 
-                        filter_surrounding_cells(&cells, &surrounding_flags_count, is_cell_discoverable, coords);
+                        filter_surrounding_cells(&cells, &surrounding_flags_count, is_cell_hidden, coords);
 
                         for (int i = 0; i < surrounding_flags_count; ++i) {
                             handle_input(ENGINE_COMMANDS.KEY_INTERACT, cells[i]);
@@ -207,6 +209,10 @@ inline void uncover_cells(const int coords[2]){
     const int mine_count = count_surrounding_mines(coords);
     cell_info* current_cell = &game_grid[coords[0]][coords[1]];
 
+    if (current_cell->is_flagged) {
+        return;
+    }
+
     current_cell->is_visible = 1;
 
     if(mine_count != 0){
@@ -234,12 +240,11 @@ inline void uncover_cells(const int coords[2]){
 
 inline void check_win() {
     int i = 0, j = 0, is_cell_hidden = 0;
-    cell_info cell;
 
     while(i < row_count && !is_cell_hidden) {
         j = 0;
         while(j < col_count && !is_cell_hidden) {
-            cell = game_grid[i][j++];
+            cell_info cell = game_grid[i][j++];
 
             if (cell.content == ENGINE_CHARS.EMPTY) {
                 is_cell_hidden = !cell.is_visible;
@@ -265,8 +270,14 @@ inline int count_surrounding_mines(const int pos[2]){
 
 inline short int is_cell_discoverable(const int coords[2]) {
     const cell_info* current_cell = &game_grid[coords[0]][coords[1]];
-    return !current_cell->is_visible && current_cell->content == ENGINE_CHARS.EMPTY;
+    return !current_cell->is_visible && current_cell->content == ENGINE_CHARS.EMPTY && !current_cell->is_flagged;
 }
+
+inline short int is_cell_hidden(const int coords[2]) {
+    const cell_info* current_cell = &game_grid[coords[0]][coords[1]];
+    return !current_cell->is_visible;
+}
+
 
 inline short int is_cell_mine(const int coords[2]) {
     const cell_info* current_cell = &game_grid[coords[0]][coords[1]];

@@ -21,7 +21,7 @@
     <list default="true" id="bcaa1aeb-992d-4092-9aad-f4ac9ac319d9" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/engine.h" beforeDir="false" afterPath="$PROJECT_DIR$/engine.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/interface.h" beforeDir="false" afterPath="$PROJECT_DIR$/interface.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/main.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,7 +111,7 @@
       <workItem from="1738839955584" duration="19756000" />
       <workItem from="1738874989897" duration="8712000" />
       <workItem from="1738964370626" duration="13028000" />
-      <workItem from="1739033484533" duration="10912000" />
+      <workItem from="1739033484533" duration="11746000" />
     </task>
     <servers />
   </component>

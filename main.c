@@ -28,7 +28,5 @@ int main(){
 // TODO
 // semplifica condizioni
 // const, short, e unsigned
-// count mine col filter
-// il flag prima dello scopri
 // selettore mine
 
