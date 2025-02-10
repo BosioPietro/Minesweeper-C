@@ -7,7 +7,6 @@
     <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
-    <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexRemoved" />
   </component>
   <component name="CMakeProjectFlavorService">
     <option name="flavorId" value="CMakePlainProjectFlavor" />
@@ -129,6 +128,9 @@
       <workItem from="1739134431683" duration="478000" />
       <workItem from="1739134924649" duration="44000" />
       <workItem from="1739135508142" duration="1989000" />
+      <workItem from="1739137852530" duration="772000" />
+      <workItem from="1739139021291" duration="15000" />
+      <workItem from="1739141533726" duration="901000" />
     </task>
     <servers />
   </component>

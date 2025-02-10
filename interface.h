@@ -590,7 +590,7 @@ inline void show_controls() {
         ANSI_COLOR_WHITE "A" ANSI_COLOR_GRAY_DK " - " ANSI_COLOR_GRAY_LG "Move left\n",
         ANSI_COLOR_WHITE "S" ANSI_COLOR_GRAY_DK " - " ANSI_COLOR_GRAY_LG "Move down\n",
         ANSI_COLOR_WHITE "D" ANSI_COLOR_GRAY_DK " - " ANSI_COLOR_GRAY_LG "Move right\n",
-        ANSI_COLOR_WHITE "Q" ANSI_COLOR_GRAY_DK " - " ANSI_COLOR_GRAY_LG "Uncover cell\n",
+        ANSI_COLOR_WHITE "E" ANSI_COLOR_GRAY_DK " - " ANSI_COLOR_GRAY_LG "Uncover cell\n",
         ANSI_COLOR_WHITE "Space" ANSI_COLOR_GRAY_DK " - " ANSI_COLOR_GRAY_LG "Place/remove flag\n",
     };
 

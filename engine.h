@@ -146,10 +146,12 @@ inline void handle_input(const key command, int coords[2]){
 
         // Interazioni
         case KEY_FLAG:
-            if (current_cell->is_flagged) {
-                current_cell->is_flagged = 0;
+            if (!current_cell->is_visible) {
+                if (current_cell->is_flagged) {
+                    current_cell->is_flagged = 0;
+                }
+                else current_cell->is_flagged = 1;
             }
-            else current_cell->is_flagged = 1;
             break;
 
         case KEY_INTERACT:
